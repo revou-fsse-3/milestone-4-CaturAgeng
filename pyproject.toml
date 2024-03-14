@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "flask-api-zoo"
+version = "0.1.0"
+description = ""
+authors = ["CaturAgeng <caturageng023@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+flask = "^3.0.2"
+flask-sqlalchemy = "^3.1.1"
+flask-smorest = "^0.43.0"
+psycopg2 = "^2.9.9"
+python-dotenv = "^1.0.1"
+pytest = "^8.0.1"
+pytest-cov = "^4.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
