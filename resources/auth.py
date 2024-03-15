@@ -19,11 +19,13 @@ class UserRegister(MethodView):
         try:
             user = UserModel(
                 username=user_data["username"],
-                password_hash=pbkdf2_sha256.hash(user_data["password"]),
+                password_hash=pbkdf2_sha256.hash(user_data["password_hash"]),
                 role="user"
             )
-
-            user.add_item()
+            # db.session.add(user)
+            # db.session.commit()
+            # add_item di ambil dari file common
+            user.get_item()
         except IntegrityError:
             abort(400, message="A user with that username already exists.")
         except SQLAlchemyError:
@@ -36,7 +38,7 @@ class UserLogin(MethodView):
     @auth_blp.arguments(UserSchema)
     def post(self, user_data):
         user = db.session.execute(select(UserModel).where(UserModel.username == user_data["username"])).first()[0]
-        if user and pbkdf2_sha256.verify(user_data["password"], user.password_hash):
+        if user and pbkdf2_sha256.verify(user_data["password_hash"], user.password_hash):
             access_token = create_access_token(identity={"id": user.id, "role": user.role}, fresh=True)
             refresh_token = create_refresh_token(identity={"id": user.id, "role": user.role})
             return {"access_token": access_token, "refresh_token": refresh_token}, 200

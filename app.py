@@ -3,17 +3,19 @@ from flask import Flask
 from flask_smorest import Api
 from dotenv import load_dotenv
 from db import db
-from resources.user import user_blp as user_blueprint
-from resources.account import account_blp as account_blueprint
-from resources.transaction import transaction_blp as transaction_blueprint
+from flask_jwt_extended import JWTManager
+from resources.user import user_blp 
+from resources.account import account_blp 
+from resources.transaction import transaction_blp
 from resources.auth import auth_blp
+import requests
 
 def create_app(is_test_env=False):
     app = Flask(__name__)
     load_dotenv()
 
     # Konfigurasi OpenAPI
-    app.config["API_TITLE"] = "Book Stores REST API"
+    app.config["API_TITLE"] = "Bank Management REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
     app.config["OPENAPI_URL_PREFIX"] = "/"
@@ -28,6 +30,10 @@ def create_app(is_test_env=False):
 
     db.init_app(app)
     register_blueprints(app)
+
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")  # Gantilah dengan secret key yang sesuai
+    jwt = JWTManager(app)
+
     with app.app_context():
         db.create_all()
 
@@ -35,9 +41,9 @@ def create_app(is_test_env=False):
 
 def register_blueprints(app):
     api = Api(app)
-    api.register_blueprint(user_blueprint)
-    api.register_blueprint(account_blueprint)
-    api.register_blueprint(transaction_blueprint)
+    api.register_blueprint(user_blp)
+    api.register_blueprint(account_blp)
+    api.register_blueprint(transaction_blp)
     api.register_blueprint(auth_blp)
 
 if __name__ == "__main__":

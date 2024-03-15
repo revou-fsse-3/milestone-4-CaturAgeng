@@ -1,7 +1,7 @@
 # models/account.py
 
 from db import db
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UniqueConstraint, DECIMAL
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, DECIMAL
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -19,8 +19,8 @@ class AccountModel(db.Model):
     # Define relationship with User
     user = relationship("UserModel", back_populates="accounts")
 
-    # Ensure uniqueness of (user_id, account_type)
-    __table_args__ = (
-        UniqueConstraint('user_id', 'account_type', name='_user_account_type_uc'),
-    )
+    # # Ensure uniqueness of (user_id, account_type)
+    # __table_args__ = (
+    #     UniqueConstraint('user_id', 'account_type', name='_user_account_type_uc'),
+    # )
 

@@ -1,20 +1,19 @@
 # schemas.py
 from marshmallow import Schema, fields, validate
 
-class UserSchema(Schema):
-    id = fields.Int(dump_only=True)
-    username = fields.Str(required=True, validate=validate.Length(max=255))
-    email = fields.Email(required=True, validate=validate.Length(max=255))
-    password_hash = fields.Str(required=True, load_only=True, validate=validate.Length(max=255))
-    created_at = fields.DateTime(required=True)
-    updated_at = fields.DateTime(required=True)
+# class UserSchema(Schema):
+#     id = fields.Int(dump_only=True)
+#     username = fields.Str(required=True, validate=validate.Length(max=255))
+#     email = fields.Email(required=True, validate=validate.Length(max=255))
+#     password_hash = fields.Str(required=True, load_only=True, validate=validate.Length(max=255))
+#     created_at = fields.DateTime(required=True)
+#     updated_at = fields.DateTime(required=True)
 
-    # Additional fields for User Management
-    token = fields.Str(dump_only=True)
+#     token = fields.Str(dump_only=True)
 
-    class Meta:
-        # Specify additional options if needed
-        pass
+class User(Schema):
+    id = fields.Integer(dump_only=True)
+
 
 class AccountSchema(Schema):
     id = fields.Integer(dump_only=True)
@@ -25,9 +24,6 @@ class AccountSchema(Schema):
     created_at = fields.DateTime(required=True)
     updated_at = fields.DateTime(required=True)
 
-    class Meta:
-        # Specify additional options if needed
-        pass
 
 class TransactionSchema(Schema):
     id = fields.Integer(dump_only=True)
@@ -38,13 +34,12 @@ class TransactionSchema(Schema):
     description = fields.String(validate=validate.Length(max=255))
     created_at = fields.DateTime(dump_only=True)
 
-    class Meta:
-        # Specify additional options if needed
-        pass
-
 class UserSchema(Schema):
     username = fields.String(required=True)
     email = fields.Email(required=True)
+    password_hash = fields.Str(required=True, load_only=True, validate=validate.Length(max=255))
 
 class PlainUserSchema(Schema):
     username = fields.String(required=True)
+    email = fields.Email(required=True)
+    password_hash = fields.Str(required=True, load_only=True, validate=validate.Length(max=255))
