@@ -24,14 +24,10 @@ class Accounts(MethodView):
     @account_blp.response(200, AccountSchema)
     def post(self, account_data):
         user_id = get_user_id()
-        new_account = AccountModel(user_id=user_id, **account_data) #Attention
-        try:
-            db.session.add(new_account)
-            db.session.commit()
-        except IntegrityError:
-            abort(http_status_code=400, message="An account with that account number already exists.")
-        except SQLAlchemyError:
-            abort(http_status_code=500, message="An error occurred while inserting the account.")
+        new_account = AccountModel(user_id=user_id, account_type="savings", balance=0.0)
+
+        db.session.add(new_account)
+        db.session.commit()
 
         return new_account
 
@@ -50,7 +46,7 @@ class Account(MethodView):
     @jwt_required()
     @account_blp.response(200, AccountSchema)
     def put(self, account_data, account_id):
-        user_id = get_user_id
+        user_id = get_user_id()
         account = AccountModel.query.filter_by(id=account_id, user_id=user_id).first()
         if not account:
             abort(403, message="You don't have permission")

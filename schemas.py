@@ -4,11 +4,11 @@ class UserSchema(Schema):
     id = fields.Int(dump_only=True)
     username = fields.Str(required=True)
     email = fields.Str()
-    password = fields.Str(required=True)
+    password_hash = fields.Str(required=True)
 
 class UserUpdateSchema(Schema):
     username = fields.Str()
-    password = fields.Str()
+    password_hash = fields.Str()
     email = fields.Str()
    
 class AccountSchema(Schema):

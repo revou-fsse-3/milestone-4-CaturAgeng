@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from db import db
 from passlib.hash import pbkdf2_sha256
 from models.user import UserModel
-from schemas import UserSchema, PlainUserSchema
+from schemas import UserSchema, UserUpdateSchema
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity, get_jwt
 from sqlalchemy import select
 from datetime import datetime
@@ -13,8 +13,8 @@ user_blp = Blueprint("users", "users", description="Operations on users", url_pr
 
 @user_blp.route("/register")
 class UserRegister(MethodView):
-    @user_blp.arguments(PlainUserSchema)
-    @user_blp.response(200, PlainUserSchema)
+    @user_blp.arguments(UserSchema)
+    @user_blp.response(200, UserSchema)
     def post(self, user_data):
         try:
             user = UserModel(
@@ -55,9 +55,9 @@ class UserProfile(MethodView):
         user = UserModel.query.get(user_id)
         return user
 
-    @user_blp.arguments(UserSchema)
+    @user_blp.arguments(UserUpdateSchema)
     @jwt_required()
-    @user_blp.response(200, UserSchema)
+    @user_blp.response(200, UserUpdateSchema)
     def put(self, user_data):
         user = UserModel.query.get(get_jwt_identity()["id"])
         if user:

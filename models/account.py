@@ -15,7 +15,7 @@ class AccountModel(db.Model):
     account_number = Column(String(255), default=lambda: "NFR-" + str(uuid.uuid4())[:8])
     balance = Column(DECIMAL(10, 2), nullable=False, default=0.0)
     created_at = Column(DateTime(timezone=True),nullable=False, server_default=func.now())
-    updated_at = Column(DateTime(timezone=True),nullable=False, onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True),nullable=False, server_default=func.now(), onupdate=func.now())
 
     # Define relationship with User
     user = relationship("UserModel", back_populates="accounts")
