@@ -3,9 +3,11 @@ from flask.views import MethodView
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from db import db
 from models.transaction import TransactionModel  
-from schemas import TransactionSchema  
+from models.account import AccountModel
+from schemas import TransactionSchema, TransactionUpdateSchema
 from resources.user import get_user_id
 from flask_jwt_extended import jwt_required
+from flask import jsonify
 
 transaction_blp = Blueprint("transactions", "transactions", description="Operations on transactions", url_prefix="/transactions")
 
@@ -15,27 +17,88 @@ class Transactions(MethodView):
     @transaction_blp.response(200, TransactionSchema(many=True))
     def get(self):
         user_id = get_user_id()
-        return TransactionModel.query.filter_by().all()
+        account_id = (
+            AccountModel.query.with_entities(AccountModel.id).filter_by(user_id=user_id).all()
+        )
+        if account_id:
+            account_id_list = [account[0] for account in account_id]
+            transaction_list =[]
+            for account_id in account_id_list:
+                transactions = TransactionModel.query.filter(
+                    (TransactionModel.to_account_id == account_id) | (TransactionModel.from_account_id == account_id)
+                ).all()
+                transaction_list.extend(transactions)
+            return transaction_list
+        return jsonify({"meesage": "Transaction not foun!"}), 404
 
-    @transaction_blp.arguments(TransactionSchema)
+    @transaction_blp.arguments(TransactionUpdateSchema)
     @jwt_required()
     @transaction_blp.response(200, TransactionSchema)
     def post(self, transaction_data):
-        user_id = get_user_id()
-
-        # Set the user_id in the transaction data
-        transaction_data["from_account_id"] = user_id
-
-        transaction = TransactionModel(**transaction_data)
         try:
-            db.session.add(transaction)
-            db.session.commit()
-        except IntegrityError:
-            abort(http_status_code=400, message="An error occurred while creating the transaction.")
-        except SQLAlchemyError:
-            abort(http_status_code=500, message="An error occurred while inserting the transaction.")
+            user_id = get_user_id()
+            if transaction_data["type"] == "deposit":
+                to_account = AccountModel.query.filter_by(
+                    id=transaction_data["to_account_id"], user_id=user_id
+                ).first()
+                new_transaction = TransactionModel(
+                    from_accoun_id = None,
+                    to_account_id = transaction_data["to_account_id"],
+                    amount = transaction_data["amount"],
+                    type = "deposit",
+                    description = transaction_data["desccription"],
+                )
+                to_account.balance += transaction_data["amount"]
+                db.session.add(new_transaction)
+                db.sessioncommit()
+                return jsonify({"message": "Deposit Successfuly!"}), 200
+            
+            elif transaction_data["type"] == "transfer":
+                from_account = AccountModel.query.filter_by(
+                    id=transaction_data["from_account_id"], user_id=user_id
+                ).first()
+                to_account = AccountModel.query.filter_by(
+                    id=transaction_data["to_account_id"], user_id=user_id
+                ).first()
 
-        return transaction
+                if from_account.balance < transaction_data["amount"]:
+                    return jsonify({"message": "Insufficient balance!"}), 400
+                new_transaction = TransactionModel(
+                    from_accoun_id = transaction_data["from_account_id"],
+                    to_account_id = transaction_data["to_account_id"],
+                    amount = transaction_data["amount"],
+                    type = "transfer",
+                    description = transaction_data["desccription"],
+                )
+                to_account.balance += transaction_data["amount"]
+                from_account.balance -= transaction_data["amount"]
+                db.session.add(new_transaction)
+                db.session.commit()
+                return jsonify({"message": "Transfer successfuly!"}), 200
+            
+            elif transaction_data["type"] == "withdrawal":
+                from_account = AccountModel.query.filter_by(
+                    id=transaction_data["from_account_id"], user_id=user_id
+                ).first()
+
+                if from_account.balance < transaction_data["amount"]:
+                    return jsonify({"message": "Insufficient balance!"}), 400
+                new_transaction = TransactionModel(
+                    from_accoun_id = transaction_data["from_account_id"],
+                    to_account_id = None,
+                    amount = transaction_data["amount"],
+                    type = "withdrawal",
+                    description = transaction_data["desccription"],
+                )
+                from_account.balance -= transaction_data["amount"]
+                db.session.add(new_transaction)
+                db.session.commit()
+                return jsonify({"message": "Withdrawal successfuly!"}), 200
+            else:
+                return jsonify({"Error": "Invalid transaction type!"}), 400
+        except SQLAlchemyError:
+            return jsonify({"Error": "Internal server error!"}), 500
+
 
 @transaction_blp.route('/<int:transaction_id>')
 class Transaction(MethodView):
@@ -43,6 +106,18 @@ class Transaction(MethodView):
     @transaction_blp.response(200, TransactionSchema)
     def get(self, transaction_id):
         user_id = get_user_id()
-        transaction = TransactionModel.query.filter_by(user_id)
+        account_id = (
+            AccountModel.query.with_entities(AccountModel.id).filter_by(user_id=user_id).all()
+        )
+        account_id_list = [account[0] for account in account_id]
+        transaction = db.session.get(TransactionModel, transaction_id)
+        if transaction is None:
+            return jsonify({"Message": "Transaction not found!"}), 404
+        if transaction and (
+            transaction.from_account_id in account_id_list or transaction.to_account_id in account_id_list
+        ):
+            return transaction
+        else: 
+            return jsonify({"Message": "You doesn't have permission!"}), 403
         
-        return transaction
+
