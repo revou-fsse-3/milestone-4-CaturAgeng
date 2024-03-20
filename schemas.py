@@ -1,45 +1,45 @@
-# schemas.py
-from marshmallow import Schema, fields, validate
-
-# class UserSchema(Schema):
-#     id = fields.Int(dump_only=True)
-#     username = fields.Str(required=True, validate=validate.Length(max=255))
-#     email = fields.Email(required=True, validate=validate.Length(max=255))
-#     password_hash = fields.Str(required=True, load_only=True, validate=validate.Length(max=255))
-#     created_at = fields.DateTime(required=True)
-#     updated_at = fields.DateTime(required=True)
-
-#     token = fields.Str(dump_only=True)
-
-class User(Schema):
-    id = fields.Integer(dump_only=True)
-
-
-class AccountSchema(Schema):
-    id = fields.Integer(dump_only=True)
-    user_id = fields.Integer(required=True)
-    account_type = fields.String(required=True, validate=validate.Length(max=255))
-    account_number = fields.String(required=True, validate=validate.Length(max=255))
-    balance = fields.Decimal(required=True, places=2)
-    created_at = fields.DateTime(required=True)
-    updated_at = fields.DateTime(required=True)
-
-
-class TransactionSchema(Schema):
-    id = fields.Integer(dump_only=True)
-    from_account_id = fields.Integer(required=False)
-    to_account_id = fields.Integer(required=False)
-    amount = fields.Decimal(required=True, places=2)
-    type = fields.String(required=True, validate=validate.Length(max=255))
-    description = fields.String(validate=validate.Length(max=255))
-    created_at = fields.DateTime(dump_only=True)
+from marshmallow import Schema, fields
 
 class UserSchema(Schema):
-    username = fields.String(required=True)
-    email = fields.Email(required=True)
-    password_hash = fields.Str(required=True, load_only=True, validate=validate.Length(max=255))
+    id = fields.Int(dump_only=True)
+    username = fields.Str(required=True)
+    email = fields.Str()
+    password = fields.Str(required=True)
 
-class PlainUserSchema(Schema):
-    username = fields.String(required=True)
-    email = fields.Email(required=True)
-    password_hash = fields.Str(required=True, load_only=True, validate=validate.Length(max=255))
+class UserUpdateSchema(Schema):
+    username = fields.Str()
+    password = fields.Str()
+    email = fields.Str()
+   
+class AccountSchema(Schema):
+    id = fields.Int(dump_only=True)
+    user_id = fields.Int()
+    account_type = fields.Str()
+    account_number = fields.Str()
+    balance = fields.Int()
+    created_at = fields.DateTime()
+    updated_at = fields.DateTime()
+    
+class AccountUpdateSchema(Schema):
+    user_id = fields.Int()
+    account_type = fields.Str()
+    account_number = fields.Str()
+    balance = fields.Int()
+    
+class TransactionSchema(Schema):
+    id = fields.Int(dump_only=True)
+    from_account_id = fields.Int()
+    to_account_id = fields.Int()
+    amount = fields.Int(required=True)
+    type = fields.Str()
+    description = fields.Str()
+    created_at = fields.DateTime(dump_only=True)
+    updated_at = fields.DateTime(dump_only=True)
+    
+
+class TransactionUpdateSchema(Schema):
+    from_account_id = fields.Int()
+    to_account_id = fields.Int()
+    amount = fields.Int()
+    type = fields.Str()
+    description = fields.Str()

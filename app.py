@@ -7,7 +7,7 @@ from flask_jwt_extended import JWTManager
 from resources.user import user_blp 
 from resources.account import account_blp 
 from resources.transaction import transaction_blp
-from resources.auth import auth_blp
+# from resources.auth import auth_blp
 import requests
 
 def create_app(is_test_env=False):
@@ -44,7 +44,7 @@ def register_blueprints(app):
     api.register_blueprint(user_blp)
     api.register_blueprint(account_blp)
     api.register_blueprint(transaction_blp)
-    api.register_blueprint(auth_blp)
+    # api.register_blueprint(auth_blp)
 
 if __name__ == "__main__":
     app = create_app()
