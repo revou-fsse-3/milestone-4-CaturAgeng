@@ -39,18 +39,22 @@ class Transactions(MethodView):
             user_id = get_user_id()
             if transaction_data["type"] == "deposit":
                 to_account = AccountModel.query.filter_by(
-                    id=transaction_data["to_account_id"], user_id=user_id
+                    id=user_id
                 ).first()
+
+                if to_account is None:
+                    return jsonify({"message": "Account not found"}), 404
+                
                 new_transaction = TransactionModel(
-                    from_accoun_id = None,
+                    from_account_id = None,
                     to_account_id = transaction_data["to_account_id"],
                     amount = transaction_data["amount"],
                     type = "deposit",
-                    description = transaction_data["desccription"],
+                    description = transaction_data["description"],
                 )
-                to_account.balance += transaction_data["amount"]
+                to_account.balance = getattr(to_account, "balance", 0) + transaction_data["amount"]
                 db.session.add(new_transaction)
-                db.sessioncommit()
+                db.session.commit()
                 return jsonify({"message": "Deposit Successfuly!"}), 200
             
             elif transaction_data["type"] == "transfer":
@@ -61,14 +65,17 @@ class Transactions(MethodView):
                     id=transaction_data["to_account_id"], user_id=user_id
                 ).first()
 
+                if from_account is None or to_account is None:
+                    return jsonify({"message": "One or more accounts not found"}), 404
+
                 if from_account.balance < transaction_data["amount"]:
                     return jsonify({"message": "Insufficient balance!"}), 400
                 new_transaction = TransactionModel(
-                    from_accoun_id = transaction_data["from_account_id"],
+                    from_account_id = transaction_data["from_account_id"],
                     to_account_id = transaction_data["to_account_id"],
                     amount = transaction_data["amount"],
                     type = "transfer",
-                    description = transaction_data["desccription"],
+                    description = transaction_data["description"],
                 )
                 to_account.balance += transaction_data["amount"]
                 from_account.balance -= transaction_data["amount"]
@@ -84,11 +91,11 @@ class Transactions(MethodView):
                 if from_account.balance < transaction_data["amount"]:
                     return jsonify({"message": "Insufficient balance!"}), 400
                 new_transaction = TransactionModel(
-                    from_accoun_id = transaction_data["from_account_id"],
+                    from_account_id = transaction_data["from_account_id"],
                     to_account_id = None,
                     amount = transaction_data["amount"],
                     type = "withdrawal",
-                    description = transaction_data["desccription"],
+                    description = transaction_data["description"],
                 )
                 from_account.balance -= transaction_data["amount"]
                 db.session.add(new_transaction)

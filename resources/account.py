@@ -24,7 +24,7 @@ class Accounts(MethodView):
     @account_blp.response(200, AccountSchema)
     def post(self, account_data):
         user_id = get_user_id()
-        new_account = AccountModel(user_id=user_id, account_type="savings", balance=0.0)
+        new_account = AccountModel(user_id=user_id, account_type="savings", balance=500)
 
         db.session.add(new_account)
         db.session.commit()
